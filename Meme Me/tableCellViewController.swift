@@ -7,3 +7,11 @@
 //
 
 import Foundation
+import UIKit
+
+class tableCellViewController: UITableViewCell{
+    
+    @IBOutlet weak var memeImage: UIImageView!
+    
+    var meme: Meme!
+}

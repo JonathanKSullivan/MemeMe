@@ -7,3 +7,12 @@
 //
 
 import Foundation
+import UIKit
+
+class SentMemesTabViewController: UITabBarController{
+    override func viewDidLoad() {
+        self.tabBar.items?.first?.title = "ListView"
+        self.tabBar.items?.last?.title = "CollectionView"
+        
+    }
+}

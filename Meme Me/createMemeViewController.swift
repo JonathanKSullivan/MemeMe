@@ -14,7 +14,7 @@ struct Meme {
     var memedImage: UIImage
 }
 
-class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate{
+class createMemeViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITextFieldDelegate{
     
     @IBOutlet weak var mainImageView: UIImageView!
     @IBOutlet weak var cameraButton: UIButton!
@@ -22,6 +22,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     @IBOutlet var bottomTextField: UITextField!
     @IBOutlet weak var photoAlbumButton: UIButton!
     @IBOutlet weak var shareButton: UIButton!
+    @IBOutlet weak var saveButton: UIButton!
     
     let memeTextAttributes = [
         NSStrokeColorAttributeName : UIColor.whiteColor(),
@@ -47,13 +48,22 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         bottomTextField.hidden = true
         topTextField.userInteractionEnabled = true
         bottomTextField.userInteractionEnabled = true
+        topTextField.adjustsFontSizeToFitWidth = false
+        bottomTextField.adjustsFontSizeToFitWidth = false
         topTextField.delegate = self
         bottomTextField.delegate = self
         self.subscribeToKeyboardNotifications()
         
     }
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+        self.tabBarController?.tabBar.items?.first?.enabled = false
+        self.tabBarController?.tabBar.items?.last?.enabled = false
+    }
     override func viewWillDisappear(animated: Bool) {
         super.viewWillDisappear(animated)
+        self.tabBarController?.tabBar.items?.first?.enabled = true
+        self.tabBarController?.tabBar.items?.last?.enabled = true
         self.unsubscribeFromKeyboardNotifications()
     }
     override func didReceiveMemoryWarning() {
@@ -76,21 +86,25 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         photoAlbumButton.hidden = true
         cameraButton.hidden = true
         shareButton.hidden = false
+        saveButton.hidden = true
         
         self.presentViewController(imagePicker, animated: true, completion: nil)
     }
     @IBAction func shareAction(sender: AnyObject) {
         let image: UIImage = generateMemedImage()
         let activityPicker = UIActivityViewController(activityItems: [image], applicationActivities: nil)
-        self.presentViewController(activityPicker, animated: true, completion:{
-            self.save(image)
-        })
+        self.presentViewController(activityPicker, animated: true, completion:nil)
     }
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController){
+    @IBAction func saveAction(sender: UIButton) {
+        let image: UIImage = generateMemedImage()
+        self.save(image)
+    }
+
+    func imagePickerControllerDidCancel(picker: UIImagePickerController){
         
         self.dismissViewControllerAnimated(true, completion: nil)
     }
-    func imagePickerController( picker: UIImagePickerController,
+    func imagePickerController(picker: UIImagePickerController,
         didFinishPickingMediaWithInfo info: [String : AnyObject]){
             if let pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
                 mainImageView.image = pickedImage
@@ -100,6 +114,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
                 cameraButton.hidden = true
                 print(mainImageView.frame.height * 3 / 8)
                 shareButton.hidden = false
+                saveButton.hidden = false
             }
             dismissViewControllerAnimated(true, completion: nil)
     }
@@ -127,24 +142,27 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         return keyboardSize.CGRectValue().height
     }
     func save(memedImage: UIImage) {
+        saveButton.hidden = true
         //Create the meme
-         let object = UIApplication.sharedApplication().delegate
+        let object = UIApplication.sharedApplication().delegate
         let appDelegate = object as! AppDelegate
         let meme = Meme( tText: topTextField.text!, bText: bottomTextField.text!, image: mainImageView.image!, memedImage: memedImage)
+        appDelegate.memes.append(meme)
         
         // Add it to the memes array in the Application Delegate
-       
-        
-        appDelegate.memes.append(meme)
     }
     func generateMemedImage() -> UIImage{
         // Render view to an image
+        let bool1 = shareButton.hidden
+        let bool2 = saveButton.hidden
         shareButton.hidden = true
+        saveButton.hidden = true
         UIGraphicsBeginImageContext(self.view.frame.size)
         self.view.drawViewHierarchyInRect(self.view.frame, afterScreenUpdates: true)
         let memedImage : UIImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        
+        shareButton.hidden = bool1
+        saveButton.hidden = bool2
         return memedImage
     }
 }

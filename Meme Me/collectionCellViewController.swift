@@ -7,3 +7,9 @@
 //
 
 import Foundation
+import UIKit
+
+class collectionCellViewController: UICollectionViewCell{
+    
+    @IBOutlet weak var memeImage: UIImageView!
+}
